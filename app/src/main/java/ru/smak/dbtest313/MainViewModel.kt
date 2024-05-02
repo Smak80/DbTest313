@@ -36,7 +36,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
     private val groupsDao: GroupsDao = db.getGroupsDao()
     private val studentsDao: StudentsDao = db.getStudentsDao()
 
-    var studList = mutableStateListOf<Student>()
+    val studList = mutableStateListOf<Student>()
     private var studCollector: Job? = null
 
     val groups = groupsDao.getAllGroups()
@@ -69,6 +69,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
                             fullName = currentName,
                         )
                     )
+                    currentName = ""
                 }
             }
         } catch (_: Throwable){
