@@ -4,15 +4,16 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GroupsDao {
     @Insert(entity = Group::class)
-    fun addGroup(group: Group): Long
+    suspend fun addGroup(group: Group): Long
 
     @Delete(entity = Group::class)
-    fun removeGroup(group: Group)
+    suspend fun removeGroup(group: Group)
 
     @Query("SELECT * FROM `group`")
-    fun getAllGroups(): List<Group>
+    fun getAllGroups(): Flow<List<Group>>
 }
