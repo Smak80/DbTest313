@@ -1,6 +1,7 @@
 package ru.smak.dbtest313
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.smak.dbtest313.database.Group
 import ru.smak.dbtest313.database.GroupsDao
 import ru.smak.dbtest313.database.Student
@@ -36,7 +38,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
     private val groupsDao: GroupsDao = db.getGroupsDao()
     private val studentsDao: StudentsDao = db.getStudentsDao()
 
-    val studList = mutableStateListOf<Student>()
+    var studList by mutableStateOf<List<Student>>(listOf())
     private var studCollector: Job? = null
 
     val groups = groupsDao.getAllGroups()
@@ -80,13 +82,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app){
     fun selectGroup(group: Group) {
         selectedGroup = group.also { gr ->
             viewModelScope.launch(Dispatchers.IO) {
-                studCollector?.apply {
-                    cancelAndJoin()
+                try {
+                    studCollector?.apply {
+                        cancelAndJoin()
+                    }
+                } catch (e: Throwable){
+                    Log.e("ERROR", e.message.toString())
                 }
                 studCollector = launch {
                     studentsDao.getStudents(gr.id).collect{
-                        studList.clear()
-                        studList.addAll(it)
+                        withContext(Dispatchers.Main) {
+                            try {
+                                studList = it
+                            } catch (e: Exception) {
+                                Log.e("ERROR", e.message.toString())
+                            }
+                        }
                     }
                 }
             }
